@@ -4,70 +4,66 @@ import de.felten.mqtt.MqttMate.model.Temperature;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.junit.platform.commons.util.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
+@DataMongoTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TemperatureRepositoryTest {
 
     @Autowired
-    TemperatureRepository temperatureRepository;
+    private TemperatureRepository temperatureRepository;
+
+    private final String kitchen = "afe17/kitchen";
+    private final String balcony = "afe17/balcony";
 
     @BeforeAll
-    public void setup() {
-        Temperature temperature = new Temperature();
-        temperature.setDeviceName("afe17/balcony");
-        temperature.setId(UUID.randomUUID().toString());
-        temperature.setTimestampUtc(LocalDateTime.now(ZoneOffset.UTC));
-        List<Double> readings = new ArrayList<>();
-        readings.add(21.0);
-        readings.add(-2.5);
-        temperature.setTemperatures(readings);
+    void setup() {
 
-        temperatureRepository.save(temperature);
+        temperatureRepository.save(Temperature.from(UUID.randomUUID().toString(),
+                LocalDateTime.of(LocalDate.of(2019, 10, 1), LocalTime.NOON), kitchen, -2.0, -21.0));
+        temperatureRepository.save(Temperature.from(UUID.randomUUID().toString(),
+                LocalDateTime.of(LocalDate.of(2019, 10, 2), LocalTime.NOON), kitchen, 12.0, 12.0));
 
-        Temperature temperature2 = new Temperature();
-        temperature2.setDeviceName("afe17/balcony");
-        temperature2.setId(UUID.randomUUID().toString());
-        temperature2.setTimestampUtc(LocalDateTime.now(ZoneOffset.UTC));
-        List<Double> readings2 = new ArrayList<>();
-        readings2.add(-1.0);
-        readings2.add(2.5);
-        temperature2.setTemperatures(readings2);
-
-        temperatureRepository.save(temperature2);
-
-        Temperature temperature3 = new Temperature();
-        temperature3.setDeviceName("afe17/kitchen");
-        temperature3.setId(UUID.randomUUID().toString());
-        temperature3.setTimestampUtc(LocalDateTime.now(ZoneOffset.UTC));
-        List<Double> readings3 = new ArrayList<>();
-        readings3.add(12.0);
-        readings3.add(12.0);
-        temperature3.setTemperatures(readings3);
-
-        temperatureRepository.save(temperature3);
+        temperatureRepository.save(Temperature.from(UUID.randomUUID().toString(),
+                LocalDateTime.of(LocalDate.of(2018, 10, 1), LocalTime.NOON), balcony, 1.0, -2.0));
+        temperatureRepository.save(Temperature.from(UUID.randomUUID().toString(),
+                LocalDateTime.of(LocalDate.of(2019, 5, 1), LocalTime.NOON), balcony, 1.0, -2.0));
+        temperatureRepository.save(Temperature.from(UUID.randomUUID().toString(),
+                LocalDateTime.of(LocalDate.of(2019, 10, 1), LocalTime.NOON), balcony, 1.0, -2.0));
+        temperatureRepository.save(Temperature.from(UUID.randomUUID().toString(),
+                LocalDateTime.of(LocalDate.of(2021, 10, 1), LocalTime.NOON), balcony, 1.0, -2.0));
     }
 
+
     @Test
-    public void findByDeviceName() {
-        List<Temperature> readingsByDeviceName = temperatureRepository.findByDeviceName("afe17/balcony");
+    void findByDeviceName() {
+        List<Temperature> readingsByDeviceName = temperatureRepository.findByDeviceName(kitchen);
         assertThat(readingsByDeviceName).hasSize(2);
     }
 
-   // @Test
-    public void findByTimestampUtcBetween() {
+    @Test
+    void findByTimestampUtcBetween() {
+        LocalDateTime gt = LocalDateTime.of(LocalDate.of(2019, 1, 1), LocalTime.NOON);
+        LocalDateTime lt = LocalDateTime.of(LocalDate.of(2021, 10, 1), LocalTime.NOON.minusSeconds(1));
+        List<Temperature> readingsByTimestampUtcBetween = temperatureRepository.findByTimestampUtcBetween(gt, lt);
+        assertThat(readingsByTimestampUtcBetween).hasSize(4);
+    }
+
+
+    @Test
+    void findByTimestampUtcBetweenAndByDeviceName() {
+        LocalDateTime gt = LocalDateTime.of(LocalDate.of(2019, 1, 1), LocalTime.NOON);
+        LocalDateTime lt = LocalDateTime.of(LocalDate.of(2021, 10, 1), LocalTime.NOON.minusSeconds(1));
+        List<Temperature> readingsByTimestampUtcBetween = temperatureRepository.findByDeviceNameAndTimestampUtcBetween(balcony, gt, lt);
+        assertThat(readingsByTimestampUtcBetween).hasSize(2);
     }
 }

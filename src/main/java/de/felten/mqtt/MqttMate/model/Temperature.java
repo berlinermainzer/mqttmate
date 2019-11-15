@@ -2,10 +2,13 @@ package de.felten.mqtt.MqttMate.model;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 // {"device":"afe17/balcony","temperatures":[25.0,25.2],"id":"3bfb475f-40dd-4136-9ecc-d14727cdda78","timestampUtc":1573829261}
@@ -53,6 +56,14 @@ public class Temperature {
         this.temperatures = temperatures;
     }
 
+    public void addTemperature(double temperature) {
+        if (temperatures == null) {
+            temperatures = new ArrayList<>();
+        }
+
+        temperatures.add(temperature);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -82,4 +93,26 @@ public class Temperature {
                 .append(temperatures)
                 .toHashCode();
     }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.JSON_STYLE)
+                .append("id", id)
+                .append("timestampUtc", timestampUtc)
+                .append("deviceName", deviceName)
+                .append("temperatures", temperatures)
+                .toString();
+    }
+
+    public static Temperature from(String id, LocalDateTime timestampUtc, String deviceName, Double... temperatures) {
+        Temperature temperature = new Temperature();
+        temperature.setId(id);
+        temperature.setTimestampUtc(timestampUtc);
+        temperature.setDeviceName(deviceName);
+        for (Double temp : temperatures) {
+            temperature.addTemperature(temp);
+        }
+        return temperature;
+    }
+
 }

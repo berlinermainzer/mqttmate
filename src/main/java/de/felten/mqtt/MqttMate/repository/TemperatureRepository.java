@@ -9,8 +9,9 @@ import java.util.List;
 
 public interface TemperatureRepository extends MongoRepository<Temperature, String>, PagingAndSortingRepository<Temperature, String> {
 
-    public List<Temperature> findByDeviceName(String deviceName);
+    List<Temperature> findByDeviceName(String deviceName);
 
-    public List<Temperature> findByTimestampUtcBetween(LocalDateTime timestampGT, LocalDateTime timestampLT);
+    List<Temperature> findByTimestampUtcBetween(LocalDateTime timestampGT, LocalDateTime timestampLT);
 
+    List<Temperature> findByDeviceNameAndTimestampUtcBetween(String deviceName, LocalDateTime timestampGT, LocalDateTime timestampLT);
 }
