@@ -46,7 +46,7 @@ class TemperatureRepositoryTest {
 
     @Test
     void findByDeviceName() {
-        List<Temperature> readingsByDeviceName = temperatureRepository.findByDeviceName(kitchen);
+        List<Temperature> readingsByDeviceName = temperatureRepository.findByDevice(kitchen);
         assertThat(readingsByDeviceName).hasSize(2);
     }
 
@@ -63,7 +63,7 @@ class TemperatureRepositoryTest {
     void findByTimestampUtcBetweenAndByDeviceName() {
         LocalDateTime gt = LocalDateTime.of(LocalDate.of(2019, 1, 1), LocalTime.NOON);
         LocalDateTime lt = LocalDateTime.of(LocalDate.of(2021, 10, 1), LocalTime.NOON.minusSeconds(1));
-        List<Temperature> readingsByTimestampUtcBetween = temperatureRepository.findByDeviceNameAndTimestampUtcBetween(balcony, gt, lt);
+        List<Temperature> readingsByTimestampUtcBetween = temperatureRepository.findByDeviceAndTimestampUtcBetween(balcony, gt, lt);
         assertThat(readingsByTimestampUtcBetween).hasSize(2);
     }
 }

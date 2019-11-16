@@ -1,5 +1,7 @@
 package de.felten.mqtt.MqttMate.model;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -8,6 +10,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +23,7 @@ public class Temperature {
 
     private LocalDateTime timestampUtc;
 
-    private String deviceName;
+    private String device;
 
     List<Double> temperatures;
 
@@ -40,12 +43,23 @@ public class Temperature {
         this.timestampUtc = timestampUtc;
     }
 
-    public String getDeviceName() {
-        return deviceName;
+    @JsonSetter("timestampUtc")
+    public void parseTimestampUtc(long epoch) {
+        LocalDateTime timestampUtc = LocalDateTime.ofEpochSecond(epoch, 0, ZoneOffset.UTC);
+        this.timestampUtc = timestampUtc;
     }
 
-    public void setDeviceName(String deviceName) {
-        this.deviceName = deviceName;
+    @JsonGetter("timestampUtc")
+    public long getTimestampUtcEpoch() {
+        return timestampUtc.toEpochSecond(ZoneOffset.UTC);
+    }
+
+    public String getDevice() {
+        return device;
+    }
+
+    public void setDevice(String device) {
+        this.device = device;
     }
 
     public List<Double> getTemperatures() {
@@ -79,7 +93,7 @@ public class Temperature {
         return new EqualsBuilder()
                 .append(id, that.id)
                 .append(timestampUtc, that.timestampUtc)
-                .append(deviceName, that.deviceName)
+                .append(device, that.device)
                 .append(temperatures, that.temperatures)
                 .isEquals();
     }
@@ -89,7 +103,7 @@ public class Temperature {
         return new HashCodeBuilder(17, 37)
                 .append(id)
                 .append(timestampUtc)
-                .append(deviceName)
+                .append(device)
                 .append(temperatures)
                 .toHashCode();
     }
@@ -99,16 +113,16 @@ public class Temperature {
         return new ToStringBuilder(this, ToStringStyle.JSON_STYLE)
                 .append("id", id)
                 .append("timestampUtc", timestampUtc)
-                .append("deviceName", deviceName)
+                .append("device", device)
                 .append("temperatures", temperatures)
                 .toString();
     }
 
-    public static Temperature from(String id, LocalDateTime timestampUtc, String deviceName, Double... temperatures) {
+    public static Temperature from(String id, LocalDateTime timestampUtc, String device, Double... temperatures) {
         Temperature temperature = new Temperature();
         temperature.setId(id);
         temperature.setTimestampUtc(timestampUtc);
-        temperature.setDeviceName(deviceName);
+        temperature.setDevice(device);
         for (Double temp : temperatures) {
             temperature.addTemperature(temp);
         }
